@@ -285,18 +285,15 @@ namespace SRTPluginUIRE3WinForms
             if (Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.Debug))
             {
                 e.Graphics.DrawString("Raw IGT", new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, 25, stdStringFormat);
-                e.Graphics.DrawString("A:" + gameMemoryRE3.IGTRunningTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, 38, stdStringFormat);
-                e.Graphics.DrawString("C:" + gameMemoryRE3.IGTCutsceneTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, 53, stdStringFormat);
-                e.Graphics.DrawString("M:" + gameMemoryRE3.IGTMenuTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, 68, stdStringFormat);
-                e.Graphics.DrawString("P:" + gameMemoryRE3.IGTPausedTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, 83, stdStringFormat);
+                e.Graphics.DrawString("A:" + gameMemoryRE3.IGTRunningTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsRunning) ? Brushes.DarkRed : Brushes.Gray, 0, 38, stdStringFormat);
+                e.Graphics.DrawString("C:" + gameMemoryRE3.IGTCutsceneTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsCutscene) ? Brushes.DarkRed : Brushes.Gray, 0, 53, stdStringFormat);
+                e.Graphics.DrawString("M:" + gameMemoryRE3.IGTMenuTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsMenu) ? Brushes.DarkRed : Brushes.Gray, 0, 68, stdStringFormat);
+                e.Graphics.DrawString("P:" + gameMemoryRE3.IGTPausedTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsPaused) ? Brushes.DarkRed : Brushes.Gray, 0, 83, stdStringFormat);
                 heightOffset = 70; // Adding an additional offset to accomdate Raw IGT.
             }
 
             e.Graphics.DrawString(string.Format("DA Rank: {0}", gameMemoryRE3.Rank), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
             e.Graphics.DrawString(string.Format("DA Score: {0}", gameMemoryRE3.RankScore), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
-
-            if (Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.Debug))
-                e.Graphics.DrawString(string.Format("State: {0}", gameMemoryRE3.State), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
 
             if (Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.Debug))
                 e.Graphics.DrawString(string.Format("Frame Delta: {0}", gameMemoryRE3.FrameDelta), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
