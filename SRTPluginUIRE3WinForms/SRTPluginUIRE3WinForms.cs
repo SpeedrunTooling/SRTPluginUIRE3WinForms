@@ -36,16 +36,24 @@ namespace SRTPluginUIRE3WinForms
         public int Shutdown()
         {
             applicationContext?.ExitThread();
+            Task.WaitAll(Task.Delay(1000));
+
             applicationContext?.Dispose();
+            applicationContext = null;
+
+            if (applicationTask != null && !applicationTask.IsCompleted)
+                applicationTask?.Wait(1000); // Sometimes the Task has not finished closing by the time we reach this point. Give it a second to wrap up.
+
             applicationTask?.Dispose();
+            applicationTask = null;
 
             return 0;
         }
 
         public int ReceiveData(object gameMemory)
         {
-            if (applicationContext.MainForm != null)
-                ((MainUI)applicationContext.MainForm).ReceiveData(gameMemory);
+            if (applicationContext?.MainForm != null)
+                ((MainUI)applicationContext?.MainForm).ReceiveData(gameMemory);
             return 0;
         }
     }
