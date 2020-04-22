@@ -186,9 +186,9 @@ namespace SRTPluginUIRE3WinForms
 
             // Draw health.
             Font healthFont = new Font("Consolas", 14, FontStyle.Bold);
-            if (gameMemoryRE3.PlayerCurrentHealth > 1200 || gameMemoryRE3.PlayerCurrentHealth < 0) // Dead?
+            if (gameMemoryRE3.PlayerCurrentHealth > 1200 || gameMemoryRE3.PlayerCurrentHealth <= 0) // Dead?
             {
-                e.Graphics.DrawString("DEAD", healthFont, Brushes.Red, 15, 37, stdStringFormat);
+                e.Graphics.DrawString("DEAD", healthFont, Brushes.Red, 82, 37, stdStringFormat);
                 playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.EMPTY, "EMPTY");
             }
             else if (gameMemoryRE3.PlayerCurrentHealth >= 801) // Fine (Green)
@@ -210,7 +210,7 @@ namespace SRTPluginUIRE3WinForms
 
         private void inventoryPanel_Paint(object sender, PaintEventArgs e)
         {
-            if (!Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoInventory))
+            if (!Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoInventory) && gameMemoryRE3.PlayerInventory != null)
             {
                 e.Graphics.SmoothingMode = smoothingMode;
                 e.Graphics.CompositingQuality = compositingQuality;
@@ -305,13 +305,16 @@ namespace SRTPluginUIRE3WinForms
                 e.Graphics.DrawString(string.Format("Saves: {0}", gameMemoryRE3.Saves), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
 
             e.Graphics.DrawString("Enemy HP", new Font("Consolas", 10, FontStyle.Bold), Brushes.Red, 0, heightOffset + (heightGap * ++i), stdStringFormat);
-            foreach (EnemyHP enemyHP in gameMemoryRE3.EnemyHealth.Where(a => a.IsAlive).OrderBy(a => a.Percentage).ThenByDescending(a => a.CurrentHP))
+            if (gameMemoryRE3.EnemyHealth != null)
             {
-                int x = 0;
-                int y = heightOffset + (heightGap * ++i);
+                foreach (EnemyHP enemyHP in gameMemoryRE3.EnemyHealth.Where(a => a.IsAlive).OrderBy(a => a.Percentage).ThenByDescending(a => a.CurrentHP))
+                {
+                    int x = 0;
+                    int y = heightOffset + (heightGap * ++i);
 
-                DrawProgressBarGDI(e, backBrushGDI, foreBrushGDI, x, y, 146, heightGap, enemyHP.Percentage * 100f, 100f);
-                e.Graphics.DrawString(string.Format("{0} {1:P1}", enemyHP.CurrentHP, enemyHP.Percentage), new Font("Consolas", 10, FontStyle.Bold), Brushes.Red, x, y, stdStringFormat);
+                    DrawProgressBarGDI(e, backBrushGDI, foreBrushGDI, x, y, 146, heightGap, enemyHP.Percentage * 100f, 100f);
+                    e.Graphics.DrawString(string.Format("{0} {1:P1}", enemyHP.CurrentHP, enemyHP.Percentage), new Font("Consolas", 10, FontStyle.Bold), Brushes.Red, x, y, stdStringFormat);
+                }
             }
         }
 
