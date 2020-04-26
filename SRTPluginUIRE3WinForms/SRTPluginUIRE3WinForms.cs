@@ -2,7 +2,9 @@
 using SRTPluginProviderRE3.Structures;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,36 +18,64 @@ namespace SRTPluginUIRE3WinForms
         private IPluginHostDelegates hostDelegates;
         private ApplicationContext applicationContext;
         private Task applicationTask;
+        public static ContextMenuStrip contextMenuStrip;
 
         [STAThread]
         public int Startup(IPluginHostDelegates hostDelegates)
         {
             this.hostDelegates = hostDelegates;
 
-            Program.Main(new string[0]);
-
+            // Must be before any rendering happens, including creation of ContextMenuStrip in Program class.
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            // Context menu.
+            contextMenuStrip = new ContextMenuStrip();
+            contextMenuStrip.Items.Add(new ToolStripMenuItem("Options", null, (object sender, EventArgs e) =>
+            {
+                using (OptionsUI optionsForm = new OptionsUI())
+                    optionsForm.ShowDialog();
+            }));
+            contextMenuStrip.Items.Add(new ToolStripSeparator());
+            contextMenuStrip.Items.Add(new ToolStripMenuItem("Exit", null, (object sender, EventArgs e) =>
+            {
+                // Call Application.Exit() within the context of the Form.
+                applicationContext?.MainForm?.Invoke(new Action(() => Application.Exit()));
+            }));
+
+            // Call the legacy code initialization.
+            Program.Main(new string[0]);
+
+            // Create and start the form.
             applicationContext = new ApplicationContext(new MainUI());
-            applicationTask = Task.Run(() => Application.Run(applicationContext));
+            applicationTask = Task.Run(() =>
+            {
+                Application.Run(applicationContext);
+            }).ContinueWith((Task t) =>
+            {
+                Shutdown();
+            });
 
             return 0;
         }
 
         public int Shutdown()
         {
-            applicationContext?.ExitThread();
-            Task.WaitAll(Task.Delay(1000));
+            // Clean up the context.
+            if (applicationContext != null)
+            {
+                // Clean up the form.
+                if (applicationContext.MainForm != null)
+                {
+                    applicationContext.MainForm.Close();
+                    applicationContext.MainForm.Dispose();
+                    applicationContext.MainForm = null;
+                }
 
-            applicationContext?.Dispose();
-            applicationContext = null;
-
-            if (applicationTask != null && !applicationTask.IsCompleted)
-                applicationTask?.Wait(1000); // Sometimes the Task has not finished closing by the time we reach this point. Give it a second to wrap up.
-
-            applicationTask?.Dispose();
-            applicationTask = null;
+                applicationContext.Dispose();
+                applicationContext = null;
+            }
 
             return 0;
         }
@@ -60,7 +90,6 @@ namespace SRTPluginUIRE3WinForms
 
     public static class Program
     {
-        //public static ContextMenu contextMenu;
         public static Options programSpecialOptions;
 
         public static readonly string srtVersion = string.Format("v{0}.{1}.{2}.{3}", SRTPluginUIRE3WinForms._Info.VersionMajor, SRTPluginUIRE3WinForms._Info.VersionMinor, SRTPluginUIRE3WinForms._Info.VersionBuild, SRTPluginUIRE3WinForms._Info.VersionRevision);
@@ -86,20 +115,15 @@ namespace SRTPluginUIRE3WinForms
                     {
                         StringBuilder message = new StringBuilder("Command-line arguments:\r\n\r\n");
                         message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--No-Titlebar", "Hide the titlebar and window frame.");
-                        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--Skip-Checksum-Check", "Skips the checksum check.");
                         message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--Always-On-Top", "Always appear on top of other windows.");
                         message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--Transparent", "Make the background transparent.");
                         message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--ScalingFactor=n", "Set the inventory slot scaling factor on a scale of 0.0 to 1.0. Default: 0.75 (75%)");
                         message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--NoInventory", "Disables the inventory display.");
-                        //message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--DirectX", "Enables the DirectX overlay.");
                         message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--Debug", "Debug mode.");
 
                         MessageBox.Show(null, message.ToString().Trim(), string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
                         Environment.Exit(0);
                     }
-
-                    if (arg.Equals("--Skip-Checksum-Check", StringComparison.InvariantCultureIgnoreCase))
-                        programSpecialOptions.Flags |= ProgramFlags.SkipChecksumCheck;
 
                     if (arg.Equals("--No-Titlebar", StringComparison.InvariantCultureIgnoreCase))
                         programSpecialOptions.Flags |= ProgramFlags.NoTitleBar;
@@ -113,9 +137,6 @@ namespace SRTPluginUIRE3WinForms
                     if (arg.Equals("--NoInventory", StringComparison.InvariantCultureIgnoreCase))
                         programSpecialOptions.Flags |= ProgramFlags.NoInventory;
 
-                    //if (arg.Equals("--DirectX", StringComparison.InvariantCultureIgnoreCase))
-                    //    programSpecialOptions.Flags |= ProgramFlags.DirectXOverlay;
-
                     if (arg.StartsWith("--ScalingFactor=", StringComparison.InvariantCultureIgnoreCase))
                         if (!double.TryParse(arg.Split(new char[1] { '=' }, 2, StringSplitOptions.None)[1], out programSpecialOptions.ScalingFactor))
                             programSpecialOptions.ScalingFactor = 0.75d; // Default scaling factor for the inventory images. If we fail to process the user input, ensure this gets set to the default value just in case.
@@ -123,19 +144,6 @@ namespace SRTPluginUIRE3WinForms
                     if (arg.Equals("--Debug", StringComparison.InvariantCultureIgnoreCase))
                         programSpecialOptions.Flags |= ProgramFlags.Debug;
                 }
-
-                //// Context menu.
-                //contextMenu = new ContextMenu();
-                //contextMenu.MenuItems.Add("Options", (object sender, EventArgs e) =>
-                //{
-                //    using (OptionsUI optionsForm = new OptionsUI())
-                //        optionsForm.ShowDialog();
-                //});
-                //contextMenu.MenuItems.Add("-", (object sender, EventArgs e) => { });
-                //contextMenu.MenuItems.Add("Exit", (object sender, EventArgs e) =>
-                //{
-                //    Environment.Exit(0);
-                //});
 
                 // Set item slot sizes after scaling is determined.
                 INV_SLOT_WIDTH = (int)Math.Round(112d * programSpecialOptions.ScalingFactor, MidpointRounding.AwayFromZero); // Individual inventory slot width.

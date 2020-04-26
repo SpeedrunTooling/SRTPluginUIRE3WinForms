@@ -18,11 +18,6 @@ namespace SRTPluginUIRE3WinForms
             else
                 Flags &= ~ProgramFlags.Debug;
 
-            if (RegistryHelper.GetBoolValue(optionsKey, "SkipChecksumCheck", false))
-                Flags |= ProgramFlags.SkipChecksumCheck;
-            else
-                Flags &= ~ProgramFlags.SkipChecksumCheck;
-
             if (RegistryHelper.GetBoolValue(optionsKey, "NoTitleBar", false))
                 Flags |= ProgramFlags.NoTitleBar;
             else
@@ -43,11 +38,6 @@ namespace SRTPluginUIRE3WinForms
             else
                 Flags &= ~ProgramFlags.NoInventory;
 
-            //if (RegistryHelper.GetBoolValue(optionsKey, "DirectXOverlay", false))
-            //    Flags |= ProgramFlags.DirectXOverlay;
-            //else
-            //    Flags &= ~ProgramFlags.DirectXOverlay;
-
             double.TryParse(RegistryHelper.GetValue(optionsKey, "ScalingFactor", "0.75"), out ScalingFactor);
 
             // Do not permit ScalingFactor values less than or equal to 0% and greater than 400%.
@@ -64,11 +54,6 @@ namespace SRTPluginUIRE3WinForms
                 optionsKey.SetValue("Debug", 1, RegistryValueKind.DWord);
             else
                 optionsKey.SetValue("Debug", 0, RegistryValueKind.DWord);
-
-            if ((Flags & ProgramFlags.SkipChecksumCheck) == ProgramFlags.SkipChecksumCheck)
-                optionsKey.SetValue("SkipChecksumCheck", 1, RegistryValueKind.DWord);
-            else
-                optionsKey.SetValue("SkipChecksumCheck", 0, RegistryValueKind.DWord);
 
             if ((Flags & ProgramFlags.NoTitleBar) == ProgramFlags.NoTitleBar)
                 optionsKey.SetValue("NoTitleBar", 1, RegistryValueKind.DWord);
@@ -89,11 +74,6 @@ namespace SRTPluginUIRE3WinForms
                 optionsKey.SetValue("NoInventory", 1, RegistryValueKind.DWord);
             else
                 optionsKey.SetValue("NoInventory", 0, RegistryValueKind.DWord);
-
-            //if ((Flags & ProgramFlags.DirectXOverlay) == ProgramFlags.DirectXOverlay)
-            //    optionsKey.SetValue("DirectXOverlay", 1, RegistryValueKind.DWord);
-            //else
-            //    optionsKey.SetValue("DirectXOverlay", 0, RegistryValueKind.DWord);
 
             // Do not permit ScalingFactor values less than or equal to 0% and greater than 400%.
             if (ScalingFactor <= 0 || ScalingFactor > 4)

@@ -48,10 +48,10 @@ namespace SRTPluginUIRE3WinForms
             // Set titlebar.
             this.Text = Program.srtTitle;
 
-            //this.ContextMenu = Program.contextMenu;
-            //this.playerHealthStatus.ContextMenu = Program.contextMenu;
-            //this.statisticsPanel.ContextMenu = Program.contextMenu;
-            //this.inventoryPanel.ContextMenu = Program.contextMenu;
+            this.ContextMenuStrip = SRTPluginUIRE3WinForms.contextMenuStrip;
+            this.playerHealthStatus.ContextMenuStrip = SRTPluginUIRE3WinForms.contextMenuStrip;
+            this.statisticsPanel.ContextMenuStrip = SRTPluginUIRE3WinForms.contextMenuStrip;
+            this.inventoryPanel.ContextMenuStrip = SRTPluginUIRE3WinForms.contextMenuStrip;
 
             //GDI+
             this.playerHealthStatus.Paint += this.playerHealthStatus_Paint;
