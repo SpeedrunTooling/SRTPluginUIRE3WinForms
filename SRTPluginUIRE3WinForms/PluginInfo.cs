@@ -11,7 +11,7 @@ namespace SRTPluginUIRE3WinForms
 
         public string Author => "Squirrelies";
 
-        public Uri MoreInfoURL => new Uri("https://github.com/Squirrelies");
+        public Uri MoreInfoURL => new Uri("https://github.com/Squirrelies/SRTPluginUIRE3WinForms");
 
         public int VersionMajor => assemblyVersion.Major;
 
