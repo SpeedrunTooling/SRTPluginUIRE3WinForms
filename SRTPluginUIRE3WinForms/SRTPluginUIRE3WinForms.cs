@@ -14,21 +14,28 @@ namespace SRTPluginUIRE3WinForms
     {
         internal static PluginInfo _Info = new PluginInfo();
         public IPluginInfo Info => _Info;
+        public string RequiredProvider => "SRTPluginProviderRE3";
 
         private IPluginHostDelegates hostDelegates;
         private ApplicationContext applicationContext;
         private Task applicationTask;
         public static ContextMenuStrip contextMenuStrip;
 
+        private bool oneTimeInit = false;
+
         [STAThread]
         public int Startup(IPluginHostDelegates hostDelegates)
         {
             this.hostDelegates = hostDelegates;
 
-            // Must be before any rendering happens, including creation of ContextMenuStrip in Program class.
-            Application.SetHighDpiMode(HighDpiMode.SystemAware);
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            if (!oneTimeInit)
+            {
+                // Must be before any rendering happens, including creation of ContextMenuStrip in Program class.
+                Application.SetHighDpiMode(HighDpiMode.DpiUnaware);
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                oneTimeInit = true;
+            }
 
             // Context menu.
             contextMenuStrip = new ContextMenuStrip();
@@ -68,8 +75,11 @@ namespace SRTPluginUIRE3WinForms
                 // Clean up the form.
                 if (applicationContext.MainForm != null)
                 {
-                    applicationContext.MainForm.Close();
-                    applicationContext.MainForm.Dispose();
+                    applicationContext.MainForm.Invoke(new Action(() =>
+                    {
+                        applicationContext.MainForm.Close();
+                        applicationContext.MainForm.Dispose();
+                    }));
                     applicationContext.MainForm = null;
                 }
 

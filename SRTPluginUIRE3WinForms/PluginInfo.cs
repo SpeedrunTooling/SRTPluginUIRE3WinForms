@@ -5,9 +5,9 @@ namespace SRTPluginUIRE3WinForms
 {
     internal class PluginInfo : IPluginInfo
     {
-        public string Name => "WinForms UI";
+        public string Name => "WinForms UI (Resident Evil 3 (2020))";
 
-        public string Description => "A WinForms-based User Interface for displaying game memory values.";
+        public string Description => "A WinForms-based User Interface for displaying Resident Evil 3 (2020) game memory values.";
 
         public string Author => "Squirrelies";
 
