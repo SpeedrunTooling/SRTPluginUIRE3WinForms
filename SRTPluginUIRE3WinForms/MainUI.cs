@@ -38,6 +38,8 @@ namespace SRTPluginUIRE3WinForms
         private Bitmap inventoryError; // An error image.
         private Bitmap inventoryItemImage;
         private Bitmap inventoryWeaponImage;
+        private Matrix inventoryNormalTransform = new Matrix(1f, 0f, 0f, 1f, 0f, 0f);
+        private Matrix inventoryShiftedTransform = new Matrix(1f, 0f, 0f, 1f, Program.INV_SLOT_WIDTH, 0f);
 
         private GameMemoryRE3 gameMemoryRE3;
 
@@ -245,13 +247,16 @@ namespace SRTPluginUIRE3WinForms
                         imageBrush = Program.WeaponToImageBrush[weapon];
                     else
                         imageBrush = Program.ErrorToImageBrush;
+                    
 
                     // Double-slot item.
                     if (imageBrush.Image.Width == Program.INV_SLOT_WIDTH * 2)
                     {
                         // If we're an odd column, we need to adjust the transform so the image doesn't get split in half and tiled. Not sure why it does this.
                         if (!evenSlotColumn)
-                            imageBrush.TranslateTransform(Program.INV_SLOT_WIDTH, 0);
+                            imageBrush.Transform = inventoryShiftedTransform; //imageBrush.TranslateTransform(Program.INV_SLOT_WIDTH, 0); // 1 0 0 1 0 0 -> 1 0 0 1 84 0
+                        else
+                            imageBrush.Transform = inventoryNormalTransform; // Since we're working on references, not copies, the value could be preserved from a prior Shifted Transform so let's reset.
 
                         // Shift the quantity text over into the 2nd slot's area.
                         textX += Program.INV_SLOT_WIDTH;
