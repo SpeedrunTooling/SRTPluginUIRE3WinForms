@@ -68,6 +68,7 @@ namespace SRTPluginUIRE3WinForms
             if (!Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoInventory))
             {
                 GenerateImages();
+                Program.GenerateBrushes(inventoryItemImage, inventoryWeaponImage, inventoryError);
 
                 // Set the width and height of the inventory display so it matches the maximum items and the scaling size of those items.
                 this.inventoryPanel.Width = Program.INV_SLOT_WIDTH * 4;
@@ -238,14 +239,12 @@ namespace SRTPluginUIRE3WinForms
 
                     TextureBrush imageBrush;
                     Weapon weapon;
-                    if (inv.IsItem && Program.ItemToImageTranslation.ContainsKey(inv.ItemID))
-                    {
-                        imageBrush = new TextureBrush(inventoryItemImage, Program.ItemToImageTranslation[inv.ItemID]);
-                    }
-                    else if (inv.IsWeapon && Program.WeaponToImageTranslation.ContainsKey(weapon = new Weapon() { WeaponID = inv.WeaponID, Attachments = inv.Attachments }))
-                        imageBrush = new TextureBrush(inventoryWeaponImage, Program.WeaponToImageTranslation[weapon]);
+                    if (inv.IsItem && Program.ItemToImageBrush.ContainsKey(inv.ItemID))
+                        imageBrush = Program.ItemToImageBrush[inv.ItemID];
+                    else if (inv.IsWeapon && Program.WeaponToImageBrush.ContainsKey(weapon = new Weapon() { WeaponID = inv.WeaponID, Attachments = inv.Attachments }))
+                        imageBrush = Program.WeaponToImageBrush[weapon];
                     else
-                        imageBrush = new TextureBrush(inventoryError, new Rectangle(0, 0, Program.INV_SLOT_WIDTH, Program.INV_SLOT_HEIGHT));
+                        imageBrush = Program.ErrorToImageBrush;
 
                     // Double-slot item.
                     if (imageBrush.Image.Width == Program.INV_SLOT_WIDTH * 2)

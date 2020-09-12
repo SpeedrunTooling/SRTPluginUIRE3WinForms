@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SRTPluginUIRE3WinForms": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

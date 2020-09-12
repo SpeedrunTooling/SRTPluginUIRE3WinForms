@@ -3,6 +3,7 @@ using SRTPluginProviderRE3.Structures;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -111,6 +112,10 @@ namespace SRTPluginUIRE3WinForms
         public static IReadOnlyDictionary<ItemEnumeration, System.Drawing.Rectangle> ItemToImageTranslation;
         public static IReadOnlyDictionary<Weapon, System.Drawing.Rectangle> WeaponToImageTranslation;
 
+        public static IReadOnlyDictionary<ItemEnumeration, System.Drawing.TextureBrush> ItemToImageBrush;
+        public static IReadOnlyDictionary<Weapon, System.Drawing.TextureBrush> WeaponToImageBrush;
+        public static System.Drawing.TextureBrush ErrorToImageBrush;
+
         public static void Main(string[] args) // NOT THE REAL ENTRYPOINT. THIS IS A PLACEHOLDER FOR LEGACY CODE TO BE PORTED.
         {
             try
@@ -186,7 +191,7 @@ namespace SRTPluginUIRE3WinForms
             int itemRowInc = -1;
             ItemToImageTranslation = new Dictionary<ItemEnumeration, System.Drawing.Rectangle>()
             {
-                { ItemEnumeration.None, new System.Drawing.Rectangle(0, 0, 0, 0) },
+                { ItemEnumeration.None, new System.Drawing.Rectangle(Program.INV_SLOT_WIDTH * 0, Program.INV_SLOT_HEIGHT * 8, Program.INV_SLOT_WIDTH, Program.INV_SLOT_HEIGHT) },
 
                 // Row 0.
                 { ItemEnumeration.First_Aid_Spray, new System.Drawing.Rectangle(Program.INV_SLOT_WIDTH * (itemColumnInc = 0), Program.INV_SLOT_HEIGHT * ++itemRowInc, Program.INV_SLOT_WIDTH, Program.INV_SLOT_HEIGHT) },
@@ -288,7 +293,7 @@ namespace SRTPluginUIRE3WinForms
             int weaponRowInc = -1;
             WeaponToImageTranslation = new Dictionary<Weapon, System.Drawing.Rectangle>()
             {
-                { new Weapon() { WeaponID = WeaponEnumeration.None, Attachments = AttachmentsFlag.None }, new System.Drawing.Rectangle(0, 0, 0, 0) },
+                { new Weapon() { WeaponID = WeaponEnumeration.None, Attachments = AttachmentsFlag.None }, new System.Drawing.Rectangle(Program.INV_SLOT_WIDTH * 0, Program.INV_SLOT_HEIGHT * 5, Program.INV_SLOT_WIDTH, Program.INV_SLOT_HEIGHT) },
 
                 // Row 1.
                 { new Weapon() { WeaponID = WeaponEnumeration.G19_Handgun, Attachments = AttachmentsFlag.None }, new System.Drawing.Rectangle(Program.INV_SLOT_WIDTH * (weaponColumnInc = 0), Program.INV_SLOT_HEIGHT * ++weaponRowInc, Program.INV_SLOT_WIDTH, Program.INV_SLOT_HEIGHT) },
@@ -341,6 +346,13 @@ namespace SRTPluginUIRE3WinForms
                 { new Weapon() { WeaponID = WeaponEnumeration.Grenade_Launcher, Attachments = AttachmentsFlag.None }, new System.Drawing.Rectangle(Program.INV_SLOT_WIDTH * ++weaponColumnInc, Program.INV_SLOT_HEIGHT * weaponRowInc, Program.INV_SLOT_WIDTH * 2, Program.INV_SLOT_HEIGHT) },
 
             };
+        }
+
+        public static void GenerateBrushes(System.Drawing.Image item, System.Drawing.Image weapon, System.Drawing.Image error)
+        {
+            ItemToImageBrush = new Dictionary<ItemEnumeration, System.Drawing.TextureBrush>(ItemToImageTranslation.Select(kvp => new KeyValuePair<ItemEnumeration, System.Drawing.TextureBrush>(kvp.Key, new System.Drawing.TextureBrush(item, kvp.Value))));
+            WeaponToImageBrush = new Dictionary<Weapon, System.Drawing.TextureBrush>(WeaponToImageTranslation.Select(kvp => new KeyValuePair<Weapon, System.Drawing.TextureBrush>(kvp.Key, new System.Drawing.TextureBrush(weapon, kvp.Value))));
+            ErrorToImageBrush = new System.Drawing.TextureBrush(error, new System.Drawing.Rectangle(0, 0, INV_SLOT_WIDTH, INV_SLOT_HEIGHT));
         }
     }
 }
