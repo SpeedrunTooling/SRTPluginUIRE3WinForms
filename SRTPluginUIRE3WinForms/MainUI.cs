@@ -135,6 +135,11 @@ namespace SRTPluginUIRE3WinForms
             }
         }
 
+        private int previousHealth = -1;
+        private Font healthFont = new Font("Consolas", 14, FontStyle.Bold);
+        private Brush healthBrush = Brushes.Red;
+        private string currentHP = "DEAD";
+        private float healthX = 82f;
         public void ReceiveData(object gameMemory)
         {
             gameMemoryRE3 = (GameMemoryRE3)gameMemory;
@@ -164,7 +169,42 @@ namespace SRTPluginUIRE3WinForms
                     lastFullUIDraw = DateTime.UtcNow.Ticks;
 
                     // Only draw these periodically to reduce CPU usage.
-                    this.playerHealthStatus.Invalidate();
+                    if (gameMemoryRE3.PlayerCurrentHealth != previousHealth)
+                    {
+                        previousHealth = gameMemoryRE3.PlayerCurrentHealth;
+
+                        // Draw health.
+                        if (gameMemoryRE3.PlayerCurrentHealth > 1200 || gameMemoryRE3.PlayerCurrentHealth <= 0) // Dead?
+                        {
+                            healthBrush = Brushes.Red;
+                            healthX = 82f;
+                            currentHP = "DEAD";
+                            this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.EMPTY, "EMPTY");
+                        }
+                        else if (gameMemoryRE3.PlayerCurrentHealth >= 801) // Fine (Green)
+                        {
+                            healthBrush = Brushes.LawnGreen;
+                            healthX = 15f;
+                            currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
+                            this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.FINE, "FINE");
+                        }
+                        else if (gameMemoryRE3.PlayerCurrentHealth <= 800 && gameMemoryRE3.PlayerCurrentHealth >= 361) // Caution (Yellow)
+                        {
+                            healthBrush = Brushes.Goldenrod;
+                            healthX = 15f;
+                            currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
+                            this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.CAUTION_YELLOW, "CAUTION_YELLOW");
+                        }
+                        else if (gameMemoryRE3.PlayerCurrentHealth <= 360) // Danger (Red)
+                        {
+                            healthBrush = Brushes.Red;
+                            healthX = 15f;
+                            currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
+                            this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.DANGER, "DANGER");
+                        }
+
+                        this.playerHealthStatus.Invalidate();
+                    }
                     if (!Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoInventory))
                         this.inventoryPanel.Invalidate();
                 }
@@ -177,7 +217,8 @@ namespace SRTPluginUIRE3WinForms
                 Debug.WriteLine("[{0}] {1}\r\n{2}", ex.GetType().ToString(), ex.Message, ex.StackTrace);
             }
         }
-
+        
+        // This paint method gets called a lot more frequently than the others either because it is a PictureBox or because the image is a Gif. Either way, do NOT do logic in here.
         private void playerHealthStatus_Paint(object sender, PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = smoothingMode;
@@ -187,28 +228,7 @@ namespace SRTPluginUIRE3WinForms
             e.Graphics.PixelOffsetMode = pixelOffsetMode;
             e.Graphics.TextRenderingHint = textRenderingHint;
 
-            // Draw health.
-            Font healthFont = new Font("Consolas", 14, FontStyle.Bold);
-            if (gameMemoryRE3.PlayerCurrentHealth > 1200 || gameMemoryRE3.PlayerCurrentHealth <= 0) // Dead?
-            {
-                e.Graphics.DrawString("DEAD", healthFont, Brushes.Red, 82, 37, stdStringFormat);
-                playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.EMPTY, "EMPTY");
-            }
-            else if (gameMemoryRE3.PlayerCurrentHealth >= 801) // Fine (Green)
-            {
-                e.Graphics.DrawString(gameMemoryRE3.PlayerCurrentHealth.ToString(), healthFont, Brushes.LawnGreen, 15, 37, stdStringFormat);
-                playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.FINE, "FINE");
-            }
-            else if (gameMemoryRE3.PlayerCurrentHealth <= 800 && gameMemoryRE3.PlayerCurrentHealth >= 361) // Caution (Yellow)
-            {
-                e.Graphics.DrawString(gameMemoryRE3.PlayerCurrentHealth.ToString(), healthFont, Brushes.Goldenrod, 15, 37, stdStringFormat);
-                playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.CAUTION_YELLOW, "CAUTION_YELLOW");
-            }
-            else if (gameMemoryRE3.PlayerCurrentHealth <= 360) // Danger (Red)
-            {
-                e.Graphics.DrawString(gameMemoryRE3.PlayerCurrentHealth.ToString(), healthFont, Brushes.Red, 15, 37, stdStringFormat);
-                playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.DANGER, "DANGER");
-            }
+            e.Graphics.DrawString(currentHP, healthFont, healthBrush, healthX, 37, stdStringFormat);
         }
 
         private void inventoryPanel_Paint(object sender, PaintEventArgs e)
@@ -247,7 +267,7 @@ namespace SRTPluginUIRE3WinForms
                         imageBrush = Program.WeaponToImageBrush[weapon];
                     else
                         imageBrush = Program.ErrorToImageBrush;
-                    
+
 
                     // Double-slot item.
                     if (imageBrush.Image.Width == Program.INV_SLOT_WIDTH * 2)
