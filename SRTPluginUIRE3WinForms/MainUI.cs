@@ -15,14 +15,6 @@ namespace SRTPluginUIRE3WinForms
 {
     public partial class MainUI : Form
     {
-        // How often to perform more expensive operations.
-        // 333 milliseconds for a full scan.
-        // 16 milliseconds for a slim scan.
-        public const long FULL_UI_DRAW_TICKS = TimeSpan.TicksPerMillisecond * 333L;
-        public const double SLIM_UI_DRAW_MS = 16d;
-
-        private long lastFullUIDraw;
-
         // Quality settings (high performance).
         private CompositingMode compositingMode = CompositingMode.SourceOver;
         private CompositingQuality compositingQuality = CompositingQuality.HighSpeed;
@@ -91,8 +83,6 @@ namespace SRTPluginUIRE3WinForms
                 // Adjust main form width as well.
                 this.Width = this.statisticsPanel.Width + 18;
             }
-
-            lastFullUIDraw = DateTime.UtcNow.Ticks;
         }
 
         public void GenerateImages()
@@ -135,11 +125,14 @@ namespace SRTPluginUIRE3WinForms
             }
         }
 
+        // Player HP change tracking
         private int previousHealth = -1;
         private Font healthFont = new Font("Consolas", 14, FontStyle.Bold);
         private Brush healthBrush = Brushes.Red;
         private string currentHP = "DEAD";
         private float healthX = 82f;
+        //Inventory change tracking
+        private InventoryEntry[] previousInventory = new InventoryEntry[20];
         public void ReceiveData(object gameMemory)
         {
             gameMemoryRE3 = (GameMemoryRE3)gameMemory;
@@ -162,50 +155,45 @@ namespace SRTPluginUIRE3WinForms
                     }
                 }
 
-                // Only draw occasionally, not as often as the stats panel.
-                if (DateTime.UtcNow.Ticks - lastFullUIDraw >= FULL_UI_DRAW_TICKS)
+                if (gameMemoryRE3.PlayerCurrentHealth != previousHealth)
                 {
-                    // Update the last drawn time.
-                    lastFullUIDraw = DateTime.UtcNow.Ticks;
+                    previousHealth = gameMemoryRE3.PlayerCurrentHealth;
 
-                    // Only draw these periodically to reduce CPU usage.
-                    if (gameMemoryRE3.PlayerCurrentHealth != previousHealth)
+                    // Draw health.
+                    if (gameMemoryRE3.PlayerCurrentHealth > 1200 || gameMemoryRE3.PlayerCurrentHealth <= 0) // Dead?
                     {
-                        previousHealth = gameMemoryRE3.PlayerCurrentHealth;
-
-                        // Draw health.
-                        if (gameMemoryRE3.PlayerCurrentHealth > 1200 || gameMemoryRE3.PlayerCurrentHealth <= 0) // Dead?
-                        {
-                            healthBrush = Brushes.Red;
-                            healthX = 82f;
-                            currentHP = "DEAD";
-                            this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.EMPTY, "EMPTY");
-                        }
-                        else if (gameMemoryRE3.PlayerCurrentHealth >= 801) // Fine (Green)
-                        {
-                            healthBrush = Brushes.LawnGreen;
-                            healthX = 15f;
-                            currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
-                            this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.FINE, "FINE");
-                        }
-                        else if (gameMemoryRE3.PlayerCurrentHealth <= 800 && gameMemoryRE3.PlayerCurrentHealth >= 361) // Caution (Yellow)
-                        {
-                            healthBrush = Brushes.Goldenrod;
-                            healthX = 15f;
-                            currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
-                            this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.CAUTION_YELLOW, "CAUTION_YELLOW");
-                        }
-                        else if (gameMemoryRE3.PlayerCurrentHealth <= 360) // Danger (Red)
-                        {
-                            healthBrush = Brushes.Red;
-                            healthX = 15f;
-                            currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
-                            this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.DANGER, "DANGER");
-                        }
-
-                        this.playerHealthStatus.Invalidate();
+                        healthBrush = Brushes.Red;
+                        healthX = 82f;
+                        currentHP = "DEAD";
+                        this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.EMPTY, "EMPTY");
                     }
-                    if (!Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoInventory))
+                    else if (gameMemoryRE3.PlayerCurrentHealth >= 801) // Fine (Green)
+                    {
+                        healthBrush = Brushes.LawnGreen;
+                        healthX = 15f;
+                        currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
+                        this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.FINE, "FINE");
+                    }
+                    else if (gameMemoryRE3.PlayerCurrentHealth <= 800 && gameMemoryRE3.PlayerCurrentHealth >= 361) // Caution (Yellow)
+                    {
+                        healthBrush = Brushes.Goldenrod;
+                        healthX = 15f;
+                        currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
+                        this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.CAUTION_YELLOW, "CAUTION_YELLOW");
+                    }
+                    else if (gameMemoryRE3.PlayerCurrentHealth <= 360) // Danger (Red)
+                    {
+                        healthBrush = Brushes.Red;
+                        healthX = 15f;
+                        currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
+                        this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.DANGER, "DANGER");
+                    }
+
+                    this.playerHealthStatus.Invalidate();
+                }
+                if (!Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoInventory))
+                {
+                    if (!gameMemoryRE3.PlayerInventory.SequenceEqual(previousInventory))
                         this.inventoryPanel.Invalidate();
                 }
 
@@ -233,6 +221,16 @@ namespace SRTPluginUIRE3WinForms
 
         private void inventoryPanel_Paint(object sender, PaintEventArgs e)
         {
+            if (previousInventory[0].Data == null)
+            {
+                for (int i = 0; i < previousInventory.Length; ++i)
+                {
+                    previousInventory[i].SlotPosition = i;
+                    previousInventory[i].Data = InventoryEntry.EMPTY_INVENTORY_ITEM;
+                    previousInventory[i].InvDataOffset = 0L;
+                }
+            }
+
             if (!Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoInventory) && gameMemoryRE3.PlayerInventory != null)
             {
                 e.Graphics.SmoothingMode = smoothingMode;
@@ -242,48 +240,49 @@ namespace SRTPluginUIRE3WinForms
                 e.Graphics.PixelOffsetMode = pixelOffsetMode;
                 e.Graphics.TextRenderingHint = textRenderingHint;
 
-                foreach (InventoryEntry inv in gameMemoryRE3.PlayerInventory)
+                for (int i = 0; i < gameMemoryRE3.PlayerInventory.Length; ++i)
                 {
-                    if (inv == default || inv.SlotPosition < 0 || inv.SlotPosition > 19 || inv.IsEmptySlot)
-                        continue;
-
-                    int slotColumn = inv.SlotPosition % 4;
-                    int slotRow = inv.SlotPosition / 4;
-                    int imageX = slotColumn * Program.INV_SLOT_WIDTH;
-                    int imageY = slotRow * Program.INV_SLOT_HEIGHT;
-                    int textX = imageX + Program.INV_SLOT_WIDTH;
-                    int textY = imageY + Program.INV_SLOT_HEIGHT;
-                    bool evenSlotColumn = slotColumn % 2 == 0;
-                    Brush textBrush = Brushes.White;
-
-                    if (inv.Quantity == 0)
-                        textBrush = Brushes.DarkRed;
-
-                    TextureBrush imageBrush;
-                    Weapon weapon;
-                    if (inv.IsItem && Program.ItemToImageBrush.ContainsKey(inv.ItemID))
-                        imageBrush = Program.ItemToImageBrush[inv.ItemID];
-                    else if (inv.IsWeapon && Program.WeaponToImageBrush.ContainsKey(weapon = new Weapon() { WeaponID = inv.WeaponID, Attachments = inv.Attachments }))
-                        imageBrush = Program.WeaponToImageBrush[weapon];
-                    else
-                        imageBrush = Program.ErrorToImageBrush;
-
-
-                    // Double-slot item.
-                    if (imageBrush.Image.Width == Program.INV_SLOT_WIDTH * 2)
+                    // Only do logic for non-blank and non-broken items.
+                    if (gameMemoryRE3.PlayerInventory[i] != default && gameMemoryRE3.PlayerInventory[i].SlotPosition >= 0 && gameMemoryRE3.PlayerInventory[i].SlotPosition <= 19 && !gameMemoryRE3.PlayerInventory[i].IsEmptySlot)
                     {
-                        // If we're an odd column, we need to adjust the transform so the image doesn't get split in half and tiled. Not sure why it does this.
-                        if (!evenSlotColumn)
-                            imageBrush.Transform = inventoryShiftedTransform; //imageBrush.TranslateTransform(Program.INV_SLOT_WIDTH, 0); // 1 0 0 1 0 0 -> 1 0 0 1 84 0
-                        else
-                            imageBrush.Transform = inventoryNormalTransform; // Since we're working on references, not copies, the value could be preserved from a prior Shifted Transform so let's reset.
 
-                        // Shift the quantity text over into the 2nd slot's area.
-                        textX += Program.INV_SLOT_WIDTH;
+                        int slotColumn = gameMemoryRE3.PlayerInventory[i].SlotPosition % 4;
+                        int slotRow = gameMemoryRE3.PlayerInventory[i].SlotPosition / 4;
+                        int imageX = slotColumn * Program.INV_SLOT_WIDTH;
+                        int imageY = slotRow * Program.INV_SLOT_HEIGHT;
+                        int textX = imageX + Program.INV_SLOT_WIDTH;
+                        int textY = imageY + Program.INV_SLOT_HEIGHT;
+                        bool evenSlotColumn = slotColumn % 2 == 0;
+                        Brush textBrush = Brushes.White;
+                        if (gameMemoryRE3.PlayerInventory[i].Quantity == 0)
+                            textBrush = Brushes.DarkRed;
+
+                        TextureBrush imageBrush;
+                        Weapon weapon;
+                        if (gameMemoryRE3.PlayerInventory[i].IsItem && Program.ItemToImageBrush.ContainsKey(gameMemoryRE3.PlayerInventory[i].ItemID))
+                            imageBrush = Program.ItemToImageBrush[gameMemoryRE3.PlayerInventory[i].ItemID];
+                        else if (gameMemoryRE3.PlayerInventory[i].IsWeapon && Program.WeaponToImageBrush.ContainsKey(weapon = new Weapon() { WeaponID = gameMemoryRE3.PlayerInventory[i].WeaponID, Attachments = gameMemoryRE3.PlayerInventory[i].Attachments }))
+                            imageBrush = Program.WeaponToImageBrush[weapon];
+                        else
+                            imageBrush = Program.ErrorToImageBrush;
+
+                        // Double-slot item.
+                        if (imageBrush.Image.Width == Program.INV_SLOT_WIDTH * 2)
+                        {
+                            // If we're an odd column, we need to adjust the transform so the image doesn't get split in half and tiled. Not sure why it does this.
+                            if (!evenSlotColumn)
+                                imageBrush.Transform = inventoryShiftedTransform; //imageBrush.TranslateTransform(Program.INV_SLOT_WIDTH, 0); // 1 0 0 1 0 0 -> 1 0 0 1 84 0
+                            else
+                                imageBrush.Transform = inventoryNormalTransform; // Since we're working on references, not copies, the value could be preserved from a prior Shifted Transform so let's reset.
+
+                            textX += Program.INV_SLOT_WIDTH;
+                        }
+
+                        e.Graphics.FillRectangle(imageBrush, imageX, imageY, imageBrush.Image.Width, imageBrush.Image.Height);
+                        e.Graphics.DrawString((gameMemoryRE3.PlayerInventory[i].Quantity != -1) ? gameMemoryRE3.PlayerInventory[i].Quantity.ToString() : "∞", new Font("Consolas", 14, FontStyle.Bold), textBrush, textX, textY, invStringFormat);
                     }
 
-                    e.Graphics.FillRectangle(imageBrush, imageX, imageY, imageBrush.Image.Width, imageBrush.Image.Height);
-                    e.Graphics.DrawString((inv.Quantity != -1) ? inv.Quantity.ToString() : "∞", new Font("Consolas", 14, FontStyle.Bold), textBrush, textX, textY, invStringFormat);
+                    previousInventory[i] = gameMemoryRE3.PlayerInventory[i].Clone();
                 }
             }
         }
