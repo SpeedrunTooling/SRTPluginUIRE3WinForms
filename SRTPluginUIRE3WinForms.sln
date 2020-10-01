@@ -9,9 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SRTPluginProviderRE3", "..\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SRTPluginBase", "..\SRTHost\SRTPluginBase\SRTPluginBase.csproj", "{961E46B1-0BC4-4818-AAE6-39464EAFAC6D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessMemory.Common", "..\ProcessMemory\ProcessMemory.Common\ProcessMemory.Common.csproj", "{95926F54-DDC8-4B8B-A30C-300DE53AAA06}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessMemory.x64", "..\ProcessMemory\ProcessMemory.x64\ProcessMemory.x64.csproj", "{C551BB7D-FADA-4979-B93C-C88BE22F25B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessMemory", "..\ProcessMemory\ProcessMemory\ProcessMemory.csproj", "{499CBED5-EEB0-4CAD-A389-9DCC976DFCAC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,14 +29,10 @@ Global
 		{961E46B1-0BC4-4818-AAE6-39464EAFAC6D}.Debug|x64.Build.0 = Debug|Any CPU
 		{961E46B1-0BC4-4818-AAE6-39464EAFAC6D}.Release|x64.ActiveCfg = Release|Any CPU
 		{961E46B1-0BC4-4818-AAE6-39464EAFAC6D}.Release|x64.Build.0 = Release|Any CPU
-		{95926F54-DDC8-4B8B-A30C-300DE53AAA06}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{95926F54-DDC8-4B8B-A30C-300DE53AAA06}.Debug|x64.Build.0 = Debug|Any CPU
-		{95926F54-DDC8-4B8B-A30C-300DE53AAA06}.Release|x64.ActiveCfg = Release|Any CPU
-		{95926F54-DDC8-4B8B-A30C-300DE53AAA06}.Release|x64.Build.0 = Release|Any CPU
-		{C551BB7D-FADA-4979-B93C-C88BE22F25B3}.Debug|x64.ActiveCfg = Debug|x64
-		{C551BB7D-FADA-4979-B93C-C88BE22F25B3}.Debug|x64.Build.0 = Debug|x64
-		{C551BB7D-FADA-4979-B93C-C88BE22F25B3}.Release|x64.ActiveCfg = Release|x64
-		{C551BB7D-FADA-4979-B93C-C88BE22F25B3}.Release|x64.Build.0 = Release|x64
+		{499CBED5-EEB0-4CAD-A389-9DCC976DFCAC}.Debug|x64.ActiveCfg = Debug|x64
+		{499CBED5-EEB0-4CAD-A389-9DCC976DFCAC}.Debug|x64.Build.0 = Debug|x64
+		{499CBED5-EEB0-4CAD-A389-9DCC976DFCAC}.Release|x64.ActiveCfg = Release|x64
+		{499CBED5-EEB0-4CAD-A389-9DCC976DFCAC}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

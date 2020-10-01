@@ -11,10 +11,10 @@ using System.Windows.Forms;
 
 namespace SRTPluginUIRE3WinForms
 {
-    public class SRTPluginUIRE3WinForms : IPluginUI
+    public class SRTPluginUIRE3WinForms : PluginBase, IPluginUI
     {
         internal static PluginInfo _Info = new PluginInfo();
-        public IPluginInfo Info => _Info;
+        public override IPluginInfo Info => _Info;
         public string RequiredProvider => "SRTPluginProviderRE3";
 
         private IPluginHostDelegates hostDelegates;
@@ -25,9 +25,10 @@ namespace SRTPluginUIRE3WinForms
         private bool oneTimeInit = false;
 
         [STAThread]
-        public int Startup(IPluginHostDelegates hostDelegates)
+        public override int Startup(IPluginHostDelegates hostDelegates)
         {
             this.hostDelegates = hostDelegates;
+            Program.config = LoadConfiguration<PluginConfiguration>();
 
             if (!oneTimeInit)
             {
@@ -68,8 +69,10 @@ namespace SRTPluginUIRE3WinForms
             return 0;
         }
 
-        public int Shutdown()
+        public override int Shutdown()
         {
+            SaveConfiguration(Program.config);
+
             // Clean up the context.
             if (applicationContext != null)
             {
@@ -101,7 +104,7 @@ namespace SRTPluginUIRE3WinForms
 
     public static class Program
     {
-        public static Options programSpecialOptions;
+        public static PluginConfiguration config;
 
         public static readonly string srtVersion = string.Format("v{0}.{1}.{2}.{3}", SRTPluginUIRE3WinForms._Info.VersionMajor, SRTPluginUIRE3WinForms._Info.VersionMinor, SRTPluginUIRE3WinForms._Info.VersionBuild, SRTPluginUIRE3WinForms._Info.VersionRevision);
         public static readonly string srtTitle = string.Format("RE3(2020) SRT - {0}", srtVersion);
@@ -121,48 +124,45 @@ namespace SRTPluginUIRE3WinForms
             try
             {
                 // Handle command-line parameters.
-                programSpecialOptions = new Options();
-                programSpecialOptions.GetOptions();
+                //foreach (string arg in args)
+                //{
+                //    if (arg.Equals("--Help", StringComparison.InvariantCultureIgnoreCase))
+                //    {
+                //        StringBuilder message = new StringBuilder("Command-line arguments:\r\n\r\n");
+                //        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--No-Titlebar", "Hide the titlebar and window frame.");
+                //        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--Always-On-Top", "Always appear on top of other windows.");
+                //        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--Transparent", "Make the background transparent.");
+                //        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--ScalingFactor=n", "Set the inventory slot scaling factor on a scale of 0.0 to 1.0. Default: 0.75 (75%)");
+                //        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--NoInventory", "Disables the inventory display.");
+                //        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--Debug", "Debug mode.");
 
-                foreach (string arg in args)
-                {
-                    if (arg.Equals("--Help", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        StringBuilder message = new StringBuilder("Command-line arguments:\r\n\r\n");
-                        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--No-Titlebar", "Hide the titlebar and window frame.");
-                        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--Always-On-Top", "Always appear on top of other windows.");
-                        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--Transparent", "Make the background transparent.");
-                        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--ScalingFactor=n", "Set the inventory slot scaling factor on a scale of 0.0 to 1.0. Default: 0.75 (75%)");
-                        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--NoInventory", "Disables the inventory display.");
-                        message.AppendFormat("{0}\r\n\t{1}\r\n\r\n", "--Debug", "Debug mode.");
+                //        MessageBox.Show(null, message.ToString().Trim(), string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //        Environment.Exit(0);
+                //    }
 
-                        MessageBox.Show(null, message.ToString().Trim(), string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        Environment.Exit(0);
-                    }
+                //    if (arg.Equals("--No-Titlebar", StringComparison.InvariantCultureIgnoreCase))
+                //        programSpecialOptions.Flags |= ProgramFlags.NoTitleBar;
 
-                    if (arg.Equals("--No-Titlebar", StringComparison.InvariantCultureIgnoreCase))
-                        programSpecialOptions.Flags |= ProgramFlags.NoTitleBar;
+                //    if (arg.Equals("--Always-On-Top", StringComparison.InvariantCultureIgnoreCase))
+                //        programSpecialOptions.Flags |= ProgramFlags.AlwaysOnTop;
 
-                    if (arg.Equals("--Always-On-Top", StringComparison.InvariantCultureIgnoreCase))
-                        programSpecialOptions.Flags |= ProgramFlags.AlwaysOnTop;
+                //    if (arg.Equals("--Transparent", StringComparison.InvariantCultureIgnoreCase))
+                //        programSpecialOptions.Flags |= ProgramFlags.Transparent;
 
-                    if (arg.Equals("--Transparent", StringComparison.InvariantCultureIgnoreCase))
-                        programSpecialOptions.Flags |= ProgramFlags.Transparent;
+                //    if (arg.Equals("--NoInventory", StringComparison.InvariantCultureIgnoreCase))
+                //        programSpecialOptions.Flags |= ProgramFlags.NoInventory;
 
-                    if (arg.Equals("--NoInventory", StringComparison.InvariantCultureIgnoreCase))
-                        programSpecialOptions.Flags |= ProgramFlags.NoInventory;
+                //    if (arg.StartsWith("--ScalingFactor=", StringComparison.InvariantCultureIgnoreCase))
+                //        if (!double.TryParse(arg.Split(new char[1] { '=' }, 2, StringSplitOptions.None)[1], out programSpecialOptions.ScalingFactor))
+                //            programSpecialOptions.ScalingFactor = 0.75d; // Default scaling factor for the inventory images. If we fail to process the user input, ensure this gets set to the default value just in case.
 
-                    if (arg.StartsWith("--ScalingFactor=", StringComparison.InvariantCultureIgnoreCase))
-                        if (!double.TryParse(arg.Split(new char[1] { '=' }, 2, StringSplitOptions.None)[1], out programSpecialOptions.ScalingFactor))
-                            programSpecialOptions.ScalingFactor = 0.75d; // Default scaling factor for the inventory images. If we fail to process the user input, ensure this gets set to the default value just in case.
-
-                    if (arg.Equals("--Debug", StringComparison.InvariantCultureIgnoreCase))
-                        programSpecialOptions.Flags |= ProgramFlags.Debug;
-                }
+                //    if (arg.Equals("--Debug", StringComparison.InvariantCultureIgnoreCase))
+                //        programSpecialOptions.Flags |= ProgramFlags.Debug;
+                //}
 
                 // Set item slot sizes after scaling is determined.
-                INV_SLOT_WIDTH = (int)Math.Round(112d * programSpecialOptions.ScalingFactor, MidpointRounding.AwayFromZero); // Individual inventory slot width.
-                INV_SLOT_HEIGHT = (int)Math.Round(112d * programSpecialOptions.ScalingFactor, MidpointRounding.AwayFromZero); // Individual inventory slot height.
+                INV_SLOT_WIDTH = (int)Math.Round(112d * config.ScalingFactor, MidpointRounding.AwayFromZero); // Individual inventory slot width.
+                INV_SLOT_HEIGHT = (int)Math.Round(112d * config.ScalingFactor, MidpointRounding.AwayFromZero); // Individual inventory slot height.
 
                 GenerateClipping();
             }

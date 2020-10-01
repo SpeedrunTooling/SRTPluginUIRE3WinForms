@@ -52,14 +52,14 @@ namespace SRTPluginUIRE3WinForms
             this.statisticsPanel.Paint += this.statisticsPanel_Paint;
             this.inventoryPanel.Paint += this.inventoryPanel_Paint;
 
-            if (Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoTitleBar))
+            if (Program.config.NoTitlebar)
                 this.FormBorderStyle = FormBorderStyle.None;
 
-            if (Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.Transparent))
+            if (Program.config.Transparent)
                 this.TransparencyKey = Color.Black;
 
             // Only run the following code if we're rendering inventory.
-            if (!Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoInventory))
+            if (!Program.config.NoInventory)
             {
                 GenerateImages();
                 Program.GenerateBrushes(inventoryItemImage, inventoryWeaponImage, inventoryError);
@@ -108,12 +108,12 @@ namespace SRTPluginUIRE3WinForms
             }
 
             // Rescales the image down if the scaling factor is not 1.
-            if (Program.programSpecialOptions.ScalingFactor != 1d)
+            if (Program.config.ScalingFactor != 1d)
             {
                 try
                 {
-                    inventoryItemImage = new Bitmap(inventoryItemImage, (int)Math.Round(inventoryItemImage.Width * Program.programSpecialOptions.ScalingFactor, MidpointRounding.AwayFromZero), (int)Math.Round(inventoryItemImage.Height * Program.programSpecialOptions.ScalingFactor, MidpointRounding.AwayFromZero));
-                    inventoryWeaponImage = new Bitmap(inventoryWeaponImage, (int)Math.Round(inventoryWeaponImage.Width * Program.programSpecialOptions.ScalingFactor, MidpointRounding.AwayFromZero), (int)Math.Round(inventoryWeaponImage.Height * Program.programSpecialOptions.ScalingFactor, MidpointRounding.AwayFromZero));
+                    inventoryItemImage = new Bitmap(inventoryItemImage, (int)Math.Round(inventoryItemImage.Width * Program.config.ScalingFactor, MidpointRounding.AwayFromZero), (int)Math.Round(inventoryItemImage.Height * Program.config.ScalingFactor, MidpointRounding.AwayFromZero));
+                    inventoryWeaponImage = new Bitmap(inventoryWeaponImage, (int)Math.Round(inventoryWeaponImage.Width * Program.config.ScalingFactor, MidpointRounding.AwayFromZero), (int)Math.Round(inventoryWeaponImage.Height * Program.config.ScalingFactor, MidpointRounding.AwayFromZero));
                 }
                 catch (Exception ex)
                 {
@@ -138,23 +138,6 @@ namespace SRTPluginUIRE3WinForms
             gameMemoryRE3 = (GameMemoryRE3)gameMemory;
             try
             {
-                if (Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.AlwaysOnTop))
-                {
-                    bool hasFocus;
-                    if (this.InvokeRequired)
-                        hasFocus = PInvoke.HasActiveFocus((IntPtr)this.Invoke(new Func<IntPtr>(() => this.Handle)));
-                    else
-                        hasFocus = PInvoke.HasActiveFocus(this.Handle);
-
-                    if (!hasFocus)
-                    {
-                        if (this.InvokeRequired)
-                            this.Invoke(new Action(() => this.TopMost = true));
-                        else
-                            this.TopMost = true;
-                    }
-                }
-
                 if (gameMemoryRE3.PlayerCurrentHealth != previousHealth)
                 {
                     previousHealth = gameMemoryRE3.PlayerCurrentHealth;
@@ -191,7 +174,7 @@ namespace SRTPluginUIRE3WinForms
 
                     this.playerHealthStatus.Invalidate();
                 }
-                if (!Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoInventory))
+                if (!Program.config.NoInventory)
                 {
                     if (!gameMemoryRE3.PlayerInventory.SequenceEqual(previousInventory))
                         this.inventoryPanel.Invalidate();
@@ -231,7 +214,7 @@ namespace SRTPluginUIRE3WinForms
                 }
             }
 
-            if (!Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoInventory) && gameMemoryRE3.PlayerInventory != null)
+            if (!Program.config.NoInventory && gameMemoryRE3.PlayerInventory != null)
             {
                 e.Graphics.SmoothingMode = smoothingMode;
                 e.Graphics.CompositingQuality = compositingQuality;
@@ -305,7 +288,7 @@ namespace SRTPluginUIRE3WinForms
             // IGT Display.
             e.Graphics.DrawString(string.Format("{0}", gameMemoryRE3.IGTFormattedString), new Font("Consolas", 16, FontStyle.Bold), Brushes.White, 0, 0, stdStringFormat);
 
-            if (Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.Debug))
+            if (Program.config.Debug)
             {
                 e.Graphics.DrawString("Raw IGT", new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, 25, stdStringFormat);
                 e.Graphics.DrawString("A:" + gameMemoryRE3.IGTRunningTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsRunning) ? Brushes.DarkRed : Brushes.Gray, 0, 38, stdStringFormat);
@@ -318,13 +301,13 @@ namespace SRTPluginUIRE3WinForms
             e.Graphics.DrawString(string.Format("DA Rank: {0}", gameMemoryRE3.Rank), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
             e.Graphics.DrawString(string.Format("DA Score: {0}", gameMemoryRE3.RankScore), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
 
-            if (Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.Debug))
+            if (Program.config.Debug)
                 e.Graphics.DrawString(string.Format("Frame Delta: {0}", gameMemoryRE3.FrameDelta), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
 
-            if (Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.Debug))
+            if (Program.config.Debug)
                 e.Graphics.DrawString(string.Format("Map ID: {0}", gameMemoryRE3.MapID), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
 
-            if (Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.Debug))
+            if (Program.config.Debug)
                 e.Graphics.DrawString(string.Format("Saves: {0}", gameMemoryRE3.Saves), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
 
             e.Graphics.DrawString("Enemy HP", new Font("Consolas", 10, FontStyle.Bold), Brushes.Red, 0, heightOffset + (heightGap * ++i), stdStringFormat);
@@ -362,7 +345,7 @@ namespace SRTPluginUIRE3WinForms
 
         private void inventoryPanel_MouseDown(object sender, MouseEventArgs e)
         {
-            if (!Program.programSpecialOptions.Flags.HasFlag(ProgramFlags.NoInventory))
+            if (!Program.config.NoInventory)
                 if (e.Button == MouseButtons.Left)
                     PInvoke.DragControl(((DoubleBufferedPanel)sender).Parent.Handle);
         }

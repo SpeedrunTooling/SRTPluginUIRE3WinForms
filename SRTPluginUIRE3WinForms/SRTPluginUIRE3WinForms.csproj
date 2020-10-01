@@ -11,14 +11,15 @@
     <Copyright>Copyright © 2020 Travis J Gutjahr</Copyright>
     <Product>Resident Evil 3 (2020) WinForms User Interface Plugin</Product>
     <Description>A user-interface plugin to display the values provided by the RE3 Provider Plugin in a WinForms window.</Description>
-    <Version>2.2.1</Version>
-    <FileVersion>2.2.1.0</FileVersion>
-    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <Version>2.3.0</Version>
+    <FileVersion>2.3.0.0</FileVersion>
+    <AssemblyVersion>2.3.0.0</AssemblyVersion>
     <!-- netcoreapp3.1 had to be hardcoded here because this project reports $(TargetFramework) as netstandard2.0 (rightfully so) and I am not sure how this project's csproj can auto-detect another project's framework version to copy it to the appropriate folder so we're just... hardcoding this. -->
     <CopyDestionationPath>$(SolutionDir)..\SRTHost\SRTHost\bin\$(Configuration)\netcoreapp3.1\plugins</CopyDestionationPath>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\ProcessMemory\ProcessMemory\ProcessMemory.csproj" />
     <ProjectReference Include="..\..\SRTHost\SRTPluginBase\SRTPluginBase.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
