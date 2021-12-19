@@ -57,6 +57,10 @@ jobs:
     - name: Move ProcessMemory down a folder to work with existing csproj pathing
       run: Move-Item -Path ProcessMemory -Destination ..\..\Squirrelies
 
+    # Get current folder contents
+    - name: Get current folder contents
+      run: Get-ChildItem -Name
+
     # Checkout latest dependencies code
     - name: Checkout SRTPluginProviderRE3
       uses: actions/checkout@v2
@@ -68,6 +72,10 @@ jobs:
     # GITHUB_WORKSPACE pathing is ass. Move this directory down one level.
     #- name: Move SRTPluginProviderRE3 down a folder to work with existing csproj pathing
     #  run: Move-Item -Path SRTPluginProviderRE3 -Destination ..\..\SpeedrunTooling
+    
+    # Get current folder contents
+    - name: Get current folder contents
+      run: Get-ChildItem -Name
 
     # Set some output variables
     - name: Set the main environment variables based on other environment variables
