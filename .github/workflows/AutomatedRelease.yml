@@ -67,7 +67,7 @@ jobs:
 
     # GITHUB_WORKSPACE pathing is ass. Move this directory down one level.
     - name: Move SRTPluginProviderRE3 down a folder to work with existing csproj pathing
-      run: Move-Item -Path SRTPluginProviderRE3 -Destination ..\..\SpeedrunTooling
+      run: Move-Item -Path SRTPluginProviderRE3 -Destination ..\SpeedrunTooling
 
     # Set some output variables
     - name: Set the main environment variables based on other environment variables
