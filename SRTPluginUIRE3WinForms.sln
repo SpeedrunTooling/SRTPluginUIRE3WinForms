@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SRTPluginUIRE3WinForms", "S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SRTPluginProviderRE3", "..\SRTPluginProviderRE3\SRTPluginProviderRE3\SRTPluginProviderRE3.csproj", "{DB62C918-FAF7-4FAA-8969-15B39FA7E395}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SRTPluginBase", "..\SRTHost\SRTPluginBase\SRTPluginBase.csproj", "{961E46B1-0BC4-4818-AAE6-39464EAFAC6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SRTPluginBase", "..\..\Squirrelies\SRTHost\SRTPluginBase\SRTPluginBase.csproj", "{961E46B1-0BC4-4818-AAE6-39464EAFAC6D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessMemory", "..\ProcessMemory\ProcessMemory\ProcessMemory.csproj", "{499CBED5-EEB0-4CAD-A389-9DCC976DFCAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessMemory", "..\..\Squirrelies\ProcessMemory\ProcessMemory\ProcessMemory.csproj", "{499CBED5-EEB0-4CAD-A389-9DCC976DFCAC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

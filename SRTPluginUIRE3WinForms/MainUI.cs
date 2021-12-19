@@ -1,5 +1,6 @@
 ﻿using SRTPluginProviderRE3;
-using SRTPluginProviderRE3.Structures;
+using SRTPluginProviderRE3.Structs;
+using SRTPluginProviderRE3.Structs.GameStructs;
 using System;
 using System.Diagnostics;
 using System.Drawing;
@@ -132,43 +133,43 @@ namespace SRTPluginUIRE3WinForms
         private string currentHP = "DEAD";
         private float healthX = 82f;
         //Inventory change tracking
-        private InventoryEntry[] previousInventory = new InventoryEntry[20];
+        private GameInventoryEntry[] previousInventory = new GameInventoryEntry[20];
         public void ReceiveData(object gameMemory)
         {
             gameMemoryRE3 = (GameMemoryRE3)gameMemory;
             try
             {
-                if (gameMemoryRE3.PlayerCurrentHealth != previousHealth)
+                if (gameMemoryRE3.Player.CurrentHP != previousHealth)
                 {
-                    previousHealth = gameMemoryRE3.PlayerCurrentHealth;
+                    previousHealth = gameMemoryRE3.Player.CurrentHP;
 
                     // Draw health.
-                    if (gameMemoryRE3.PlayerCurrentHealth > 1200 || gameMemoryRE3.PlayerCurrentHealth <= 0) // Dead?
+                    if (gameMemoryRE3.Player.CurrentHP > 1200 || gameMemoryRE3.Player.CurrentHP <= 0) // Dead?
                     {
                         healthBrush = Brushes.Red;
                         healthX = 82f;
                         currentHP = "DEAD";
                         this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.EMPTY, "EMPTY");
                     }
-                    else if (gameMemoryRE3.PlayerCurrentHealth >= 801) // Fine (Green)
+                    else if (gameMemoryRE3.Player.CurrentHP >= 801) // Fine (Green)
                     {
                         healthBrush = Brushes.LawnGreen;
                         healthX = 15f;
-                        currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
+                        currentHP = gameMemoryRE3.Player.CurrentHP.ToString();
                         this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.FINE, "FINE");
                     }
-                    else if (gameMemoryRE3.PlayerCurrentHealth <= 800 && gameMemoryRE3.PlayerCurrentHealth >= 361) // Caution (Yellow)
+                    else if (gameMemoryRE3.Player.CurrentHP <= 800 && gameMemoryRE3.Player.CurrentHP >= 361) // Caution (Yellow)
                     {
                         healthBrush = Brushes.Goldenrod;
                         healthX = 15f;
-                        currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
+                        currentHP = gameMemoryRE3.Player.CurrentHP.ToString();
                         this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.CAUTION_YELLOW, "CAUTION_YELLOW");
                     }
-                    else if (gameMemoryRE3.PlayerCurrentHealth <= 360) // Danger (Red)
+                    else if (gameMemoryRE3.Player.CurrentHP <= 360) // Danger (Red)
                     {
                         healthBrush = Brushes.Red;
                         healthX = 15f;
-                        currentHP = gameMemoryRE3.PlayerCurrentHealth.ToString();
+                        currentHP = gameMemoryRE3.Player.CurrentHP.ToString();
                         this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.DANGER, "DANGER");
                     }
 
@@ -204,22 +205,22 @@ namespace SRTPluginUIRE3WinForms
 
         private void inventoryPanel_Paint(object sender, PaintEventArgs e)
         {
-            if (previousInventory[0].Data == null)
-            {
-                for (int i = 0; i < previousInventory.Length; ++i)
-                {
-                    previousInventory[i].SlotPosition = i;
-                    previousInventory[i].Data = new int[5]
-                    {
-                        0x00000000,
-                        unchecked((int)0xFFFFFFFF),
-                        0x00000000,
-                        0x00000000,
-                        0x01000000
-                    };
-                    previousInventory[i].InvDataOffset = 0L;
-                }
-            }
+            //if (previousInventory[0].Data == null)
+            //{
+            //    for (int i = 0; i < previousInventory.Length; ++i)
+            //    {
+            //        previousInventory[i].SlotPosition = i;
+            //        previousInventory[i].Data = new int[5]
+            //        {
+            //            0x00000000,
+            //            unchecked((int)0xFFFFFFFF),
+            //            0x00000000,
+            //            0x00000000,
+            //            0x01000000
+            //        };
+            //        previousInventory[i].InvDataOffset = 0L;
+            //    }
+            //}
 
             if (!Program.config.NoInventory && gameMemoryRE3.PlayerInventory != null)
             {
@@ -233,7 +234,8 @@ namespace SRTPluginUIRE3WinForms
                 for (int i = 0; i < gameMemoryRE3.PlayerInventory.Length; ++i)
                 {
                     // Only do logic for non-blank and non-broken items.
-                    if (gameMemoryRE3.PlayerInventory[i] != default && gameMemoryRE3.PlayerInventory[i].SlotPosition >= 0 && gameMemoryRE3.PlayerInventory[i].SlotPosition <= 19 && !gameMemoryRE3.PlayerInventory[i].IsEmptySlot)
+                    //if (gameMemoryRE3.PlayerInventory[i] != default && gameMemoryRE3.PlayerInventory[i].SlotPosition >= 0 && gameMemoryRE3.PlayerInventory[i].SlotPosition <= 19 && !gameMemoryRE3.PlayerInventory[i].IsEmptySlot)
+                    if (gameMemoryRE3.PlayerInventory[i].SlotPosition >= 0 && gameMemoryRE3.PlayerInventory[i].SlotPosition <= 19 && !gameMemoryRE3.PlayerInventory[i].IsEmptySlot)
                     {
 
                         int slotColumn = gameMemoryRE3.PlayerInventory[i].SlotPosition % 4;
@@ -272,7 +274,8 @@ namespace SRTPluginUIRE3WinForms
                         e.Graphics.DrawString((gameMemoryRE3.PlayerInventory[i].Quantity != -1) ? gameMemoryRE3.PlayerInventory[i].Quantity.ToString() : "∞", new Font("Consolas", 14, FontStyle.Bold), textBrush, textX, textY, invStringFormat);
                     }
 
-                    previousInventory[i] = gameMemoryRE3.PlayerInventory[i].Clone();
+                    //previousInventory[i] = gameMemoryRE3.PlayerInventory[i].Clone();
+                    previousInventory[i] = gameMemoryRE3.PlayerInventory[i];
                 }
             }
         }
@@ -298,15 +301,15 @@ namespace SRTPluginUIRE3WinForms
             if (Program.config.Debug)
             {
                 e.Graphics.DrawString("Raw IGT", new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, 25, stdStringFormat);
-                e.Graphics.DrawString("A:" + gameMemoryRE3.IGTRunningTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsRunning) ? Brushes.DarkRed : Brushes.Gray, 0, 38, stdStringFormat);
-                e.Graphics.DrawString("C:" + gameMemoryRE3.IGTCutsceneTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsCutscene) ? Brushes.DarkRed : Brushes.Gray, 0, 53, stdStringFormat);
-                e.Graphics.DrawString("M:" + gameMemoryRE3.IGTMenuTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsMenu) ? Brushes.DarkRed : Brushes.Gray, 0, 68, stdStringFormat);
-                e.Graphics.DrawString("P:" + gameMemoryRE3.IGTPausedTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsPaused) ? Brushes.DarkRed : Brushes.Gray, 0, 83, stdStringFormat);
+                e.Graphics.DrawString("A:" + gameMemoryRE3.Timer.IGTRunningTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsRunning) ? Brushes.DarkRed : Brushes.Gray, 0, 38, stdStringFormat);
+                e.Graphics.DrawString("C:" + gameMemoryRE3.Timer.IGTCutsceneTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsCutscene) ? Brushes.DarkRed : Brushes.Gray, 0, 53, stdStringFormat);
+                e.Graphics.DrawString("M:" + gameMemoryRE3.Timer.IGTMenuTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsMenu) ? Brushes.DarkRed : Brushes.Gray, 0, 68, stdStringFormat);
+                e.Graphics.DrawString("P:" + gameMemoryRE3.Timer.IGTPausedTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsPaused) ? Brushes.DarkRed : Brushes.Gray, 0, 83, stdStringFormat);
                 heightOffset = 70; // Adding an additional offset to accomdate Raw IGT.
             }
 
-            e.Graphics.DrawString(string.Format("DA Rank: {0}", gameMemoryRE3.Rank), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
-            e.Graphics.DrawString(string.Format("DA Score: {0}", gameMemoryRE3.RankScore), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
+            e.Graphics.DrawString(string.Format("DA Rank: {0}", gameMemoryRE3.RankManager.Rank), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
+            e.Graphics.DrawString(string.Format("DA Score: {0}", gameMemoryRE3.RankManager.RankScore), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
 
             if (Program.config.Debug)
                 e.Graphics.DrawString(string.Format("Frame Delta: {0}", gameMemoryRE3.FrameDelta), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);

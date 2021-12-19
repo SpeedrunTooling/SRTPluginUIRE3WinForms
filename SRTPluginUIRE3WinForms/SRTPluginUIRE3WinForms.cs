@@ -1,5 +1,5 @@
 ﻿using SRTPluginBase;
-using SRTPluginProviderRE3.Structures;
+using SRTPluginProviderRE3.Structs;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
