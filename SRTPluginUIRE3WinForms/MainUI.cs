@@ -133,43 +133,43 @@ namespace SRTPluginUIRE3WinForms
         private string currentHP = "DEAD";
         private float healthX = 82f;
         //Inventory change tracking
-        private GameInventoryEntry[] previousInventory = new GameInventoryEntry[20];
+        private InventoryEntry[] previousInventory = new InventoryEntry[20];
         public void ReceiveData(object gameMemory)
         {
             gameMemoryRE3 = (GameMemoryRE3)gameMemory;
             try
             {
-                if (gameMemoryRE3.Player.CurrentHP != previousHealth)
+                if (gameMemoryRE3.PlayerManager.Health.CurrentHP != previousHealth)
                 {
-                    previousHealth = gameMemoryRE3.Player.CurrentHP;
+                    previousHealth = gameMemoryRE3.PlayerManager.Health.CurrentHP;
 
                     // Draw health.
-                    if (gameMemoryRE3.Player.CurrentHP > 1200 || gameMemoryRE3.Player.CurrentHP <= 0) // Dead?
+                    if (gameMemoryRE3.PlayerManager.Health.CurrentHP > 1200 || gameMemoryRE3.PlayerManager.Health.CurrentHP <= 0) // Dead?
                     {
                         healthBrush = Brushes.Red;
                         healthX = 82f;
                         currentHP = "DEAD";
                         this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.EMPTY, "EMPTY");
                     }
-                    else if (gameMemoryRE3.Player.CurrentHP >= 801) // Fine (Green)
+                    else if (gameMemoryRE3.PlayerManager.Health.CurrentHP >= 801) // Fine (Green)
                     {
                         healthBrush = Brushes.LawnGreen;
                         healthX = 15f;
-                        currentHP = gameMemoryRE3.Player.CurrentHP.ToString();
+                        currentHP = gameMemoryRE3.PlayerManager.Health.CurrentHP.ToString();
                         this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.FINE, "FINE");
                     }
-                    else if (gameMemoryRE3.Player.CurrentHP <= 800 && gameMemoryRE3.Player.CurrentHP >= 361) // Caution (Yellow)
+                    else if (gameMemoryRE3.PlayerManager.Health.CurrentHP <= 800 && gameMemoryRE3.PlayerManager.Health.CurrentHP >= 361) // Caution (Yellow)
                     {
                         healthBrush = Brushes.Goldenrod;
                         healthX = 15f;
-                        currentHP = gameMemoryRE3.Player.CurrentHP.ToString();
+                        currentHP = gameMemoryRE3.PlayerManager.Health.CurrentHP.ToString();
                         this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.CAUTION_YELLOW, "CAUTION_YELLOW");
                     }
-                    else if (gameMemoryRE3.Player.CurrentHP <= 360) // Danger (Red)
+                    else if (gameMemoryRE3.PlayerManager.Health.CurrentHP <= 360) // Danger (Red)
                     {
                         healthBrush = Brushes.Red;
                         healthX = 15f;
-                        currentHP = gameMemoryRE3.Player.CurrentHP.ToString();
+                        currentHP = gameMemoryRE3.PlayerManager.Health.CurrentHP.ToString();
                         this.playerHealthStatus.ThreadSafeSetHealthImage(Properties.Resources.DANGER, "DANGER");
                     }
 
@@ -177,7 +177,7 @@ namespace SRTPluginUIRE3WinForms
                 }
                 if (!Program.config.NoInventory)
                 {
-                    if (!gameMemoryRE3.PlayerInventory.SequenceEqual(previousInventory))
+                    if (!gameMemoryRE3.Items.SequenceEqual(previousInventory))
                         this.inventoryPanel.Invalidate();
                 }
 
@@ -209,7 +209,7 @@ namespace SRTPluginUIRE3WinForms
             //{
             //    for (int i = 0; i < previousInventory.Length; ++i)
             //    {
-            //        previousInventory[i].SlotPosition = i;
+            //        previousInventory[i].SlotNo = i;
             //        previousInventory[i].Data = new int[5]
             //        {
             //            0x00000000,
@@ -222,7 +222,7 @@ namespace SRTPluginUIRE3WinForms
             //    }
             //}
 
-            if (!Program.config.NoInventory && gameMemoryRE3.PlayerInventory != null)
+            if (!Program.config.NoInventory && gameMemoryRE3.Items != null)
             {
                 e.Graphics.SmoothingMode = smoothingMode;
                 e.Graphics.CompositingQuality = compositingQuality;
@@ -231,29 +231,29 @@ namespace SRTPluginUIRE3WinForms
                 e.Graphics.PixelOffsetMode = pixelOffsetMode;
                 e.Graphics.TextRenderingHint = textRenderingHint;
 
-                for (int i = 0; i < gameMemoryRE3.PlayerInventory.Length; ++i)
+                for (int i = 0; i < gameMemoryRE3.Items.Length; ++i)
                 {
                     // Only do logic for non-blank and non-broken items.
-                    //if (gameMemoryRE3.PlayerInventory[i] != default && gameMemoryRE3.PlayerInventory[i].SlotPosition >= 0 && gameMemoryRE3.PlayerInventory[i].SlotPosition <= 19 && !gameMemoryRE3.PlayerInventory[i].IsEmptySlot)
-                    if (gameMemoryRE3.PlayerInventory[i].SlotPosition >= 0 && gameMemoryRE3.PlayerInventory[i].SlotPosition <= 19 && !gameMemoryRE3.PlayerInventory[i].IsEmptySlot)
+                    //if (gameMemoryRE3.Items[i] != default && gameMemoryRE3.Items[i].SlotNo >= 0 && gameMemoryRE3.Items[i].SlotNo <= 19 && !gameMemoryRE3.Items[i].IsEmptySlot)
+                    if (gameMemoryRE3.Items[i].SlotNo >= 0 && gameMemoryRE3.Items[i].SlotNo <= 19 && !gameMemoryRE3.Items[i].IsEmptySlot)
                     {
 
-                        int slotColumn = gameMemoryRE3.PlayerInventory[i].SlotPosition % 4;
-                        int slotRow = gameMemoryRE3.PlayerInventory[i].SlotPosition / 4;
+                        int slotColumn = gameMemoryRE3.Items[i].SlotNo % 4;
+                        int slotRow = gameMemoryRE3.Items[i].SlotNo / 4;
                         int imageX = slotColumn * Program.INV_SLOT_WIDTH;
                         int imageY = slotRow * Program.INV_SLOT_HEIGHT;
                         int textX = imageX + Program.INV_SLOT_WIDTH;
                         int textY = imageY + Program.INV_SLOT_HEIGHT;
                         bool evenSlotColumn = slotColumn % 2 == 0;
                         Brush textBrush = Brushes.White;
-                        if (gameMemoryRE3.PlayerInventory[i].Quantity == 0)
+                        if (gameMemoryRE3.Items[i].Count == 0)
                             textBrush = Brushes.DarkRed;
 
                         TextureBrush imageBrush;
                         Weapon weapon;
-                        if (gameMemoryRE3.PlayerInventory[i].IsItem && Program.ItemToImageBrush.ContainsKey(gameMemoryRE3.PlayerInventory[i].ItemID))
-                            imageBrush = Program.ItemToImageBrush[gameMemoryRE3.PlayerInventory[i].ItemID];
-                        else if (gameMemoryRE3.PlayerInventory[i].IsWeapon && Program.WeaponToImageBrush.ContainsKey(weapon = new Weapon() { WeaponID = gameMemoryRE3.PlayerInventory[i].WeaponID, Attachments = gameMemoryRE3.PlayerInventory[i].Attachments }))
+                        if (gameMemoryRE3.Items[i].IsItem && Program.ItemToImageBrush.ContainsKey(gameMemoryRE3.Items[i].ItemId))
+                            imageBrush = Program.ItemToImageBrush[gameMemoryRE3.Items[i].ItemId];
+                        else if (gameMemoryRE3.Items[i].IsWeapon && Program.WeaponToImageBrush.ContainsKey(weapon = new Weapon() { WeaponID = gameMemoryRE3.Items[i].WeaponId, Attachments = gameMemoryRE3.Items[i].WeaponParts }))
                             imageBrush = Program.WeaponToImageBrush[weapon];
                         else
                             imageBrush = Program.ErrorToImageBrush;
@@ -271,11 +271,11 @@ namespace SRTPluginUIRE3WinForms
                         }
 
                         e.Graphics.FillRectangle(imageBrush, imageX, imageY, imageBrush.Image.Width, imageBrush.Image.Height);
-                        e.Graphics.DrawString((gameMemoryRE3.PlayerInventory[i].Quantity != -1) ? gameMemoryRE3.PlayerInventory[i].Quantity.ToString() : "∞", new Font("Consolas", 14, FontStyle.Bold), textBrush, textX, textY, invStringFormat);
+                        e.Graphics.DrawString((gameMemoryRE3.Items[i].Count != -1) ? gameMemoryRE3.Items[i].Count.ToString() : "∞", new Font("Consolas", 14, FontStyle.Bold), textBrush, textX, textY, invStringFormat);
                     }
 
-                    //previousInventory[i] = gameMemoryRE3.PlayerInventory[i].Clone();
-                    previousInventory[i] = gameMemoryRE3.PlayerInventory[i];
+                    //previousInventory[i] = gameMemoryRE3.Items[i].Clone();
+                    previousInventory[i] = gameMemoryRE3.Items[i];
                 }
             }
         }
@@ -296,40 +296,40 @@ namespace SRTPluginUIRE3WinForms
             int i = 1;
 
             // IGT Display.
-            e.Graphics.DrawString(string.Format("{0}", gameMemoryRE3.IGTFormattedString), new Font("Consolas", 16, FontStyle.Bold), Brushes.White, 0, 0, stdStringFormat);
+            e.Graphics.DrawString(string.Format("{0}", gameMemoryRE3.Timer.IGTFormattedString), new Font("Consolas", 16, FontStyle.Bold), Brushes.White, 0, 0, stdStringFormat);
 
             if (Program.config.Debug)
             {
                 e.Graphics.DrawString("Raw IGT", new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, 25, stdStringFormat);
-                e.Graphics.DrawString("A:" + gameMemoryRE3.Timer.IGTRunningTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsRunning) ? Brushes.DarkRed : Brushes.Gray, 0, 38, stdStringFormat);
-                e.Graphics.DrawString("C:" + gameMemoryRE3.Timer.IGTCutsceneTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsCutscene) ? Brushes.DarkRed : Brushes.Gray, 0, 53, stdStringFormat);
-                e.Graphics.DrawString("M:" + gameMemoryRE3.Timer.IGTMenuTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsMenu) ? Brushes.DarkRed : Brushes.Gray, 0, 68, stdStringFormat);
-                e.Graphics.DrawString("P:" + gameMemoryRE3.Timer.IGTPausedTimer.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.IsPaused) ? Brushes.DarkRed : Brushes.Gray, 0, 83, stdStringFormat);
+                e.Graphics.DrawString("A:" + gameMemoryRE3.Timer.GameSaveData.GameElapsedTime.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.Timer.MeasureGameElapsedTime) ? Brushes.DarkRed : Brushes.Gray, 0, 38, stdStringFormat);
+                e.Graphics.DrawString("C:" + gameMemoryRE3.Timer.GameSaveData.DemoSpendingTime.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.Timer.MeasureDemoSpendingTime) ? Brushes.DarkRed : Brushes.Gray, 0, 53, stdStringFormat);
+                e.Graphics.DrawString("M:" + gameMemoryRE3.Timer.GameSaveData.InventorySpendingTime.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.Timer.MeasureInventorySpendingTime) ? Brushes.DarkRed : Brushes.Gray, 0, 68, stdStringFormat);
+                e.Graphics.DrawString("P:" + gameMemoryRE3.Timer.GameSaveData.PauseSpendingTime.ToString("00000000000000000000"), new Font("Consolas", 9, FontStyle.Bold), (gameMemoryRE3.Timer.MeasurePauseSpendingTime) ? Brushes.DarkRed : Brushes.Gray, 0, 83, stdStringFormat);
                 heightOffset = 70; // Adding an additional offset to accomdate Raw IGT.
             }
 
-            e.Graphics.DrawString(string.Format("DA Rank: {0}", gameMemoryRE3.RankManager.Rank), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
-            e.Graphics.DrawString(string.Format("DA Score: {0}", gameMemoryRE3.RankManager.RankScore), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
+            e.Graphics.DrawString(string.Format("DA Rank: {0}", gameMemoryRE3.RankManager.GameRank), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
+            e.Graphics.DrawString(string.Format("DA Score: {0}", gameMemoryRE3.RankManager.RankPoint), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
 
-            if (Program.config.Debug)
-                e.Graphics.DrawString(string.Format("Frame Delta: {0}", gameMemoryRE3.FrameDelta), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
+            //if (Program.config.Debug)
+            //    e.Graphics.DrawString(string.Format("Frame Delta: {0}", gameMemoryRE3.FrameDelta), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
 
             if (Program.config.Debug)
                 e.Graphics.DrawString(string.Format("Map ID: {0}", gameMemoryRE3.MapID), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
 
-            if (Program.config.Debug)
-                e.Graphics.DrawString(string.Format("Saves: {0}", gameMemoryRE3.Saves), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
+            //if (Program.config.Debug)
+            //    e.Graphics.DrawString(string.Format("Saves: {0}", gameMemoryRE3.Saves), new Font("Consolas", 9, FontStyle.Bold), Brushes.Gray, 0, heightOffset + (heightGap * ++i), stdStringFormat);
 
             e.Graphics.DrawString("Enemy HP", new Font("Consolas", 10, FontStyle.Bold), Brushes.Red, 0, heightOffset + (heightGap * ++i), stdStringFormat);
-            if (gameMemoryRE3.EnemyHealth != null)
+            if (gameMemoryRE3.Enemies != null)
             {
-                foreach (EnemyHP enemyHP in gameMemoryRE3.EnemyHealth.Where(a => a.IsAlive).OrderBy(a => a.Percentage).ThenByDescending(a => a.CurrentHP))
+                foreach (Enemy enemy in gameMemoryRE3.Enemies.Where(a => a.IsAlive).OrderBy(a => a.Percentage).ThenByDescending(a => a.CurrentHP))
                 {
                     int x = 0;
                     int y = heightOffset + (heightGap * ++i);
 
-                    DrawProgressBarGDI(e, backBrushGDI, foreBrushGDI, x, y, 146, heightGap, enemyHP.Percentage * 100f, 100f);
-                    e.Graphics.DrawString(string.Format("{0} {1:P1}", enemyHP.CurrentHP, enemyHP.Percentage), new Font("Consolas", 10, FontStyle.Bold), Brushes.Red, x, y, stdStringFormat);
+                    DrawProgressBarGDI(e, backBrushGDI, foreBrushGDI, x, y, 146, heightGap, enemy.Percentage * 100f, 100f);
+                    e.Graphics.DrawString(string.Format("{0} {1:P1}", enemy.CurrentHP, enemy.Percentage), new Font("Consolas", 10, FontStyle.Bold), Brushes.Red, x, y, stdStringFormat);
                 }
             }
         }

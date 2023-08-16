@@ -31,7 +31,7 @@ jobs:
     
     # Create repo user folder for the dependencies
     - name: Create repo user folder
-      run: New-Item -ItemType directory -Path ..\..\Squirrelies
+      run: New-Item -ItemType directory -Path ..\..\SpeedRunTool
     
     # Checkout latest dependencies code
     - name: Checkout SRTHost
@@ -39,23 +39,11 @@ jobs:
       with:
         fetch-depth: 0
         path: SRTHost
-        repository: Squirrelies/SRTHost
+        repository: SpeedRunTool/SRTHost
 
     # GITHUB_WORKSPACE pathing is ass. Move this directory down one level.
     - name: Move SRTHost down a folder to work with existing csproj pathing
-      run: Move-Item -Path SRTHost -Destination ..\..\Squirrelies
-
-    # Checkout latest dependencies code
-    - name: Checkout ProcessMemory
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        path: ProcessMemory
-        repository: Squirrelies/ProcessMemory
-
-    # GITHUB_WORKSPACE pathing is ass. Move this directory down one level.
-    - name: Move ProcessMemory down a folder to work with existing csproj pathing
-      run: Move-Item -Path ProcessMemory -Destination ..\..\Squirrelies
+      run: Move-Item -Path SRTHost -Destination ..\..\SpeedRunTool
 
     # Checkout latest dependencies code
     - name: Checkout SRTPluginProviderRE3
